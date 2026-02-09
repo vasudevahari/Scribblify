@@ -1,69 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
+import './App.css';
 
 const socket = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001');
 
 // ============================================
-// UI COMPONENTS
+// LANDING COMPONENT
 // ============================================
 
-function Card({ children, className = '' }) {
-  return <div className={`bg-white rounded-xl shadow-sm ${className}`}>{children}</div>;
-}
-
-function Button({ children, onClick, variant = 'default', className = '', disabled = false }) {
-  const baseStyles = 'px-6 py-2 rounded-xl font-medium transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
-  const variants = {
-    default: 'bg-blue-500 text-white hover:bg-blue-600',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100'
-  };
-  return (
-    <button onClick={onClick} disabled={disabled} className={`${baseStyles} ${variants[variant]} ${className}`}>
-      {children}
-    </button>
-  );
-}
-
-function Input({ placeholder, value, onChange, onKeyDown, disabled = false, className = '' }) {
-  return (
-    <input
-      type="text"
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={onKeyDown}
-      disabled={disabled}
-      className={`w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
-    />
-  );
-}
-
-function Select({ value, onChange, options, className = '' }) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`flex-1 px-4 py-3 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
-  );
-}
-
-// ============================================
-// LANDING COMPONENT (ENHANCED)
-// ============================================
-
-const AVATAR_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
+const AVATAR_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
 
 function Landing({ onCreateRoom, onPlay, onJoinPrivate }) {
   const [playerName, setPlayerName] = useState('');
   const [colorIndex, setColorIndex] = useState(0);
   const [theme, setTheme] = useState('general');
-  const [language, setLanguage] = useState('en');
 
   const currentAvatar = {
     color: AVATAR_COLORS[colorIndex],
@@ -98,71 +48,79 @@ function Landing({ onCreateRoom, onPlay, onJoinPrivate }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md flex flex-col gap-6">
+    <div className="game-screen">
+      <div className="landing-container">
         
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900">Doodle Dash</h1>
+        <div className="game-logo">
+          <h1 className="game-title">🎨 Doodle Dash</h1>
+          <p className="game-subtitle">Draw • Guess • Win!</p>
         </div>
 
-        <div className="flex gap-4">
-          <Select
-            value={theme}
-            onChange={setTheme}
-            options={[
-              { value: 'general', label: 'General' },
-              { value: 'animals', label: 'Animals' },
-              { value: 'food', label: 'Food' },
-              { value: 'objects', label: 'Objects' },
-              { value: 'nature', label: 'Nature' }
-            ]}
-          />
-          <Select
-            value={language}
-            onChange={setLanguage}
-            options={[
-              { value: 'en', label: 'English' },
-              { value: 'es', label: 'Español' }
-            ]}
-          />
-        </div>
-
-        <Input placeholder="Enter your name" value={playerName} onChange={setPlayerName} />
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <Button variant="ghost" onClick={prevColor} className="text-2xl">←</Button>
-            
-            <div 
-              className="w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-sm"
-              style={{ backgroundColor: currentAvatar.color }}
-            >
-              {currentAvatar.letter}
-            </div>
-
-            <Button variant="ghost" onClick={nextColor} className="text-2xl">→</Button>
+        <div className="game-card">
+          
+          <div className="form-section">
+            <label className="form-label">Choose Theme</label>
+            <select value={theme} onChange={(e) => setTheme(e.target.value)} className="game-select">
+              <option value="general">🎯 General</option>
+              <option value="animals">🦁 Animals</option>
+              <option value="food">🍕 Food</option>
+              <option value="objects">📱 Objects</option>
+              <option value="nature">🌲 Nature</option>
+            </select>
           </div>
-        </Card>
 
-        <div className="flex flex-col gap-3">
-          <Button onClick={handleCreateRoom} className="h-14">Create Room</Button>
-          <Button onClick={handlePlay}>Play Public</Button>
-          <Button variant="secondary" onClick={handleJoinPrivate}>Join Private</Button>
+          <div className="form-section">
+            <label className="form-label">Your Name</label>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="game-input"
+              maxLength={20}
+            />
+          </div>
+
+          <div className="avatar-selector">
+            <label className="form-label">Choose Avatar</label>
+            <div className="avatar-picker">
+              <button onClick={prevColor} className="avatar-arrow">←</button>
+              
+              <div className="avatar-circle" style={{ backgroundColor: currentAvatar.color }}>
+                {currentAvatar.letter}
+              </div>
+
+              <button onClick={nextColor} className="avatar-arrow">→</button>
+            </div>
+          </div>
+
+          <div className="button-group">
+            <button onClick={handlePlay} className="btn-primary btn-large">
+              ▶️ PLAY NOW
+            </button>
+            <button onClick={handleCreateRoom} className="btn-secondary">
+              🏠 Create Room
+            </button>
+            <button onClick={handleJoinPrivate} className="btn-secondary">
+              🔑 Join Private
+            </button>
+          </div>
+
         </div>
-
       </div>
     </div>
   );
 }
 
-// ============ CREATE ROOM COMPONENT ============
+// ============================================
+// CREATE ROOM COMPONENT
+// ============================================
+
 function CreateRoom({ playerName, avatar, theme, socket }) {
   const [settings, setSettings] = useState({
     isPublic: true,
     maxPlayers: 4,
     rounds: 3,
-    wordsCount: 1,
-    difficulty: 'easy',
     drawTime: 80
   });
 
@@ -171,48 +129,69 @@ function CreateRoom({ playerName, avatar, theme, socket }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-6">Create Room</h2>
+    <div className="game-screen">
+      <div className="landing-container">
+        <div className="game-card">
+          <h2 className="card-title">🏠 Create Room</h2>
 
-        <div className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Room Type</span>
-            <Select value={settings.isPublic} onChange={(val) => setSettings({...settings, isPublic: val === 'true'})} options={[
-              { value: 'true', label: 'Public' },
-              { value: 'false', label: 'Private' }
-            ]} />
-          </label>
+          <div className="form-section">
+            <label className="form-label">Room Type</label>
+            <select 
+              value={settings.isPublic} 
+              onChange={(e) => setSettings({...settings, isPublic: e.target.value === 'true'})} 
+              className="game-select"
+            >
+              <option value="true">🌍 Public</option>
+              <option value="false">🔒 Private</option>
+            </select>
+          </div>
 
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Max Players</span>
-            <Select value={settings.maxPlayers} onChange={(val) => setSettings({...settings, maxPlayers: Number(val)})} options={
-              [2,3,4,5,6,7,8].map(n => ({ value: n, label: n.toString() }))
-            } />
-          </label>
+          <div className="form-section">
+            <label className="form-label">Max Players</label>
+            <select 
+              value={settings.maxPlayers} 
+              onChange={(e) => setSettings({...settings, maxPlayers: Number(e.target.value)})} 
+              className="game-select"
+            >
+              {[2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} Players</option>)}
+            </select>
+          </div>
 
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Rounds</span>
-            <Select value={settings.rounds} onChange={(val) => setSettings({...settings, rounds: Number(val)})} options={
-              [3,5,7,9].map(n => ({ value: n, label: n.toString() }))
-            } />
-          </label>
+          <div className="form-section">
+            <label className="form-label">Rounds</label>
+            <select 
+              value={settings.rounds} 
+              onChange={(e) => setSettings({...settings, rounds: Number(e.target.value)})} 
+              className="game-select"
+            >
+              {[3,5,7,9].map(n => <option key={n} value={n}>{n} Rounds</option>)}
+            </select>
+          </div>
 
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Draw Time (seconds)</span>
-            <Select value={settings.drawTime} onChange={(val) => setSettings({...settings, drawTime: Number(val)})} options={
-              [60, 75, 80, 95, 120].map(n => ({ value: n, label: `${n}s` }))
-            } />
-          </label>
+          <div className="form-section">
+            <label className="form-label">Draw Time</label>
+            <select 
+              value={settings.drawTime} 
+              onChange={(e) => setSettings({...settings, drawTime: Number(e.target.value)})} 
+              className="game-select"
+            >
+              {[60, 75, 80, 95, 120].map(n => <option key={n} value={n}>{n} seconds</option>)}
+            </select>
+          </div>
 
-          <Button onClick={handleCreate} className="w-full h-12">Create</Button>
+          <button onClick={handleCreate} className="btn-primary btn-large">
+            ✨ Create Room
+          </button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
 
-// ============ JOIN ROOM COMPONENT ============
+// ============================================
+// JOIN ROOM COMPONENT
+// ============================================
+
 function JoinRoom({ playerName, avatar, socket, isPublic }) {
   const [roomCode, setRoomCode] = useState('');
 
@@ -229,28 +208,41 @@ function JoinRoom({ playerName, avatar, socket, isPublic }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-6">{isPublic ? 'Join Public Game' : 'Join Private Game'}</h2>
-        {!isPublic && (
-          <Input
-            placeholder="Enter 6-digit room code"
-            value={roomCode}
-            onChange={setRoomCode}
-            className="mb-4"
-          />
-        )}
-        <Button onClick={handleJoin} className="w-full h-12">Join</Button>
-      </Card>
+    <div className="game-screen">
+      <div className="landing-container">
+        <div className="game-card">
+          <h2 className="card-title">
+            {isPublic ? '🌍 Join Public Game' : '🔑 Join Private Game'}
+          </h2>
+          
+          {!isPublic && (
+            <div className="form-section">
+              <label className="form-label">Room Code</label>
+              <input
+                type="text"
+                placeholder="Enter 6-digit code"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                className="game-input"
+                maxLength={6}
+              />
+            </div>
+          )}
+          
+          <button onClick={handleJoin} className="btn-primary btn-large">
+            🚀 Join Game
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ============================================
-// CANVAS COMPONENT (ENHANCED WITH UNDO)
+// CANVAS COMPONENT
 // ============================================
 
-function Canvas({ socket, roomCode, canDraw, currentTool, canvasData, onUndo }) {
+function Canvas({ socket, roomCode, canDraw, currentTool }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
@@ -345,38 +337,32 @@ function Canvas({ socket, roomCode, canDraw, currentTool, canvasData, onUndo }) 
   };
 
   return (
-    <Card className="p-4">
-      <div className="relative bg-white rounded-xl overflow-hidden shadow-sm">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={450}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-          className={`w-full h-auto ${!canDraw ? 'cursor-not-allowed opacity-50' : 'cursor-crosshair'}`}
-        />
-        {!canDraw && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 text-white text-xl font-bold">
-            Watch and guess!
-          </div>
-        )}
-      </div>
-    </Card>
+    <div className="canvas-container">
+      <canvas
+        ref={canvasRef}
+        width={1000}
+        height={500}
+        className={`drawing-canvas ${!canDraw ? 'disabled' : ''}`}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+      />
+      {!canDraw && <div className="canvas-overlay">👀 Watch and guess!</div>}
+    </div>
   );
 }
 
 // ============================================
-// TOOLS COMPONENT (ENHANCED WITH BRUSH SIZES)
+// TOOLS COMPONENT
 // ============================================
 
-const COLORS = ['#000000', '#ffffff', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
+const COLORS = ['#000000', '#FFFFFF', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#F7DC6F', '#BB8FCE'];
 
-function Tools({ socket, roomCode, canDraw, currentTool, setCurrentTool, onUndo }) {
+function Tools({ socket, roomCode, canDraw, currentTool, setCurrentTool }) {
   const handleClear = () => {
     if (!canDraw) return;
     socket.emit('clearCanvas', { roomCode });
@@ -385,110 +371,98 @@ function Tools({ socket, roomCode, canDraw, currentTool, setCurrentTool, onUndo 
   const handleUndo = () => {
     if (!canDraw) return;
     socket.emit('undo', { roomCode });
-    onUndo();
   };
 
   return (
-    <Card className="p-4">
-      {/* Color Palette */}
+    <div className="tools-panel">
+      
       {canDraw && (
-        <div className="flex gap-2 mb-4 justify-center">
+        <div className="color-palette">
           {COLORS.map((c) => (
             <button
               key={c}
               onClick={() => setCurrentTool({...currentTool, color: c})}
-              className={`w-10 h-10 rounded-lg border-2 hover:scale-105 transition-transform ${
-                currentTool.color === c ? 'border-gray-900 ring-2 ring-blue-500' : 'border-gray-300'
-              }`}
+              className={`color-btn ${currentTool.color === c ? 'active' : ''}`}
               style={{ backgroundColor: c }}
             />
           ))}
         </div>
       )}
 
-      {/* Brush Sizes & Actions */}
       {canDraw && (
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex gap-2">
-            <Button
-              variant={currentTool.size === 2 ? 'default' : 'secondary'}
+        <div className="tool-actions">
+          <div className="brush-sizes">
+            <button
+              className={`brush-btn ${currentTool.size === 2 ? 'active' : ''}`}
               onClick={() => setCurrentTool({...currentTool, size: 2})}
-              className="w-12 h-12"
             >
               S
-            </Button>
-            <Button
-              variant={currentTool.size === 5 ? 'default' : 'secondary'}
+            </button>
+            <button
+              className={`brush-btn ${currentTool.size === 5 ? 'active' : ''}`}
               onClick={() => setCurrentTool({...currentTool, size: 5})}
-              className="w-12 h-12"
             >
               M
-            </Button>
-            <Button
-              variant={currentTool.size === 10 ? 'default' : 'secondary'}
+            </button>
+            <button
+              className={`brush-btn ${currentTool.size === 10 ? 'active' : ''}`}
               onClick={() => setCurrentTool({...currentTool, size: 10})}
-              className="w-12 h-12"
             >
               L
-            </Button>
+            </button>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleUndo} variant="secondary">↶ Undo</Button>
-            <Button onClick={handleClear} variant="secondary">Clear</Button>
-          </div>
+          <button onClick={handleUndo} className="tool-btn">↶ Undo</button>
+          <button onClick={handleClear} className="tool-btn">🗑️ Clear</button>
         </div>
       )}
-    </Card>
-  );
-}
-
-// ============ PLAYER LIST COMPONENT (ENHANCED) ============
-function PlayerList({ players, currentDrawer, myId }) {
-  return (
-    <div className="lg:w-1/4">
-      <Card className="p-4 h-full">
-        <h3 className="font-bold text-gray-900 mb-4">Players</h3>
-        <div className="overflow-y-auto h-[400px] lg:h-full">
-          <div className="space-y-2">
-            {players.map((player) => (
-              <Card 
-                key={player.id}
-                className={`p-4 ${player.id === myId ? 'ring-2 ring-blue-500' : ''} ${player.id === currentDrawer?.id ? 'bg-blue-50' : ''}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: player.avatar?.color || '#3b82f6' }}
-                  >
-                    {player.avatar?.letter || player.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">{player.name}</span>
-                      {player.id === myId && <span className="text-xs text-blue-600">(You)</span>}
-                    </div>
-                    <div className="text-xs text-gray-600">{player.score || 0} pts</div>
-                  </div>
-                  {player.rank <= 3 && (
-                    <div className="text-lg">
-                      {player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉'}
-                    </div>
-                  )}
-                </div>
-                {player.id === currentDrawer?.id && (
-                  <div className="mt-2 text-xs text-blue-600 animate-bounce">Drawing now...</div>
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
 
-// ============ CHAT COMPONENT (ENHANCED) ============
-function Chat({ socket, roomCode, isDrawer, hasGuessed }) {
+// ============================================
+// PLAYER LIST COMPONENT
+// ============================================
+
+function PlayerList({ players, currentDrawer, myId }) {
+  return (
+    <div className="player-panel">
+      <h3 className="panel-title">👥 Players</h3>
+      <div className="players-list">
+        {players.map((player) => (
+          <div 
+            key={player.id}
+            className={`player-item ${player.id === myId ? 'my-player' : ''} ${player.id === currentDrawer?.id ? 'drawing' : ''}`}
+          >
+            <div className="player-avatar" style={{ backgroundColor: player.avatar?.color || '#3b82f6' }}>
+              {player.avatar?.letter || player.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="player-details">
+              <div className="player-name">
+                {player.name}
+                {player.id === myId && <span className="you-badge">YOU</span>}
+              </div>
+              <div className="player-score">⭐ {player.score || 0} pts</div>
+            </div>
+            {player.rank <= 3 && (
+              <div className="rank-badge">
+                {player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉'}
+              </div>
+            )}
+            {player.id === currentDrawer?.id && (
+              <div className="drawing-indicator">✏️</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// CHAT COMPONENT
+// ============================================
+
+function Chat({ socket, roomCode, isDrawer }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
@@ -512,56 +486,63 @@ function Chat({ socket, roomCode, isDrawer, hasGuessed }) {
   };
 
   return (
-    <div className="lg:w-1/5">
-      <Card className="p-4 h-[500px] lg:h-full flex flex-col">
-        <h3 className="font-bold text-gray-900 mb-4">Chat</h3>
-        <div className="flex-1 overflow-y-auto mb-4">
-          <div className="space-y-2">
-            {messages.map((msg, i) => (
-              <div key={i} className={`text-sm ${msg.isSystem ? 'text-green-600 font-medium' : 'text-gray-900'}`}>
-                {!msg.isSystem && <span className="font-bold">{msg.player}: </span>}
-                <span>{msg.message}</span>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
+    <div className="chat-panel">
+      <h3 className="panel-title">💬 Chat</h3>
+      <div className="chat-messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={`chat-msg ${msg.isSystem ? 'system' : 'user'}`}>
+            {!msg.isSystem && <span className="msg-author">{msg.player}:</span>}
+            <span className="msg-text">{msg.message}</span>
           </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <Input
-            placeholder={isDrawer ? "You're drawing!" : "Type your guess..."}
-            value={input}
-            onChange={setInput}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            disabled={isDrawer}
-          />
-          <Button onClick={handleSend} disabled={isDrawer}>Send</Button>
-        </div>
-      </Card>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      <div className="chat-input-container">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          placeholder={isDrawer ? "You're drawing!" : "Type your guess..."}
+          className="chat-input"
+          disabled={isDrawer}
+        />
+        <button onClick={handleSend} disabled={isDrawer} className="send-btn">
+          ➤
+        </button>
+      </div>
     </div>
   );
 }
 
-// ============ ROUND END COMPONENT ============
+// ============================================
+// ROUND END COMPONENT
+// ============================================
+
 function RoundEnd({ data }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="p-8 max-w-md">
-        <h3 className="text-2xl font-bold mb-4">Round Complete! 🎉</h3>
-        <div className="space-y-2">
+    <div className="modal-overlay">
+      <div className="modal-card celebration">
+        <h3 className="modal-title">🎉 Round Complete!</h3>
+        <div className="results-list">
           {data.guessOrder.map((guess, i) => (
-            <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span>{i + 1}. {guess.name}</span>
-              <span className="font-bold text-blue-600">+{data.scores[guess.playerId]} pts</span>
+            <div key={i} className="result-item">
+              <span className="result-rank">#{i + 1}</span>
+              <span className="result-name">{guess.name}</span>
+              <span className="result-points">+{data.scores[guess.playerId]} pts</span>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
 
-// ============ GAME ROOM COMPONENT (ENHANCED) ============
+// ============================================
+// GAME ROOM COMPONENT
+// ============================================
+
 function GameRoom({ room, socket, playerName }) {
   const [gameState, setGameState] = useState({
     started: false,
@@ -581,10 +562,34 @@ function GameRoom({ room, socket, playerName }) {
   const [finalScores, setFinalScores] = useState([]);
   const [currentTool, setCurrentTool] = useState({ color: '#000000', size: 5 });
   const [updatedRoom, setUpdatedRoom] = useState(room);
-  const [canvasData, setCanvasData] = useState([]);
 
   useEffect(() => {
     socket.on('gameStarted', ({ room }) => {
+      setGameState(prev => ({ ...prev, started: true }));
+      setUpdatedRoom(room);
+    });
+
+    socket.on('selectWord', ({ words }) => {
+      setWordChoices(words);
+      setShowWordSelection(true);
+    });
+
+    socket.on('roundStarted', ({ drawer, hiddenWord, drawTime, currentRound, totalRounds }) => {
+      setShowWordSelection(false);
+      setGameState({
+        started: true,
+        drawer,
+        hiddenWord,
+        timeLeft: drawTime,
+        currentRound,
+        totalRounds,
+        isDrawing: drawer.id === socket.id,
+        hasGuessed: false
+      });
+      startTimer(drawTime);
+    });
+
+    socket.on('correctGuess', () => {
       setGameState(prev => ({ ...prev, hasGuessed: true }));
     });
 
@@ -647,135 +652,140 @@ function GameRoom({ room, socket, playerName }) {
 
   const handleCopyRoomLink = () => {
     navigator.clipboard.writeText(room.code);
-    alert('Room code copied!');
+    alert('Room code copied! 📋');
   };
 
   if (showGameEnd) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-md w-full">
-          <h2 className="text-3xl font-bold mb-6 text-center">Game Over! 🎮</h2>
-          <div className="space-y-3">
-            {finalScores.map((player) => (
-              <div key={player.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
+      <div className="game-screen">
+        <div className="landing-container">
+          <div className="game-card celebration">
+            <h2 className="card-title">🏆 Game Over!</h2>
+            <div className="final-scores">
+              {finalScores.map((player) => (
+                <div key={player.id} className="final-rank-item">
+                  <span className="final-rank">
                     {player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : player.rank === 3 ? '🥉' : `#${player.rank}`}
                   </span>
-                  <span className="font-medium">{player.name}</span>
+                  <span className="final-name">{player.name}</span>
+                  <span className="final-score">{player.score} pts</span>
                 </div>
-                <span className="font-bold text-lg">{player.score} pts</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (showWordSelection) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-md w-full">
-          <h3 className="text-2xl font-bold mb-6 text-center">Choose a word:</h3>
-          <div className="flex flex-col gap-3">
-            {wordChoices.map(word => (
-              <Button key={word} onClick={() => handleWordSelect(word)} className="h-14 text-lg">
-                {word}
-              </Button>
-            ))}
+      <div className="game-screen">
+        <div className="landing-container">
+          <div className="game-card">
+            <h3 className="card-title">🎯 Choose a word:</h3>
+            <div className="word-choices">
+              {wordChoices.map(word => (
+                <button key={word} onClick={() => handleWordSelect(word)} className="word-btn">
+                  {word}
+                </button>
+              ))}
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (!gameState.started) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-2xl w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Room: {room.code}</h2>
-            <Button variant="ghost" onClick={handleCopyRoomLink}>Copy Code</Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <span className="text-sm text-gray-600">Type</span>
-              <p className="font-medium">{room.isPublic ? 'Public' : 'Private'}</p>
+      <div className="game-screen">
+        <div className="lobby-container">
+          <div className="game-card">
+            <div className="room-header">
+              <h2 className="card-title">🏠 Room: {room.code}</h2>
+              <button onClick={handleCopyRoomLink} className="copy-btn">📋 Copy</button>
             </div>
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <span className="text-sm text-gray-600">Players</span>
-              <p className="font-medium">{updatedRoom.players.length}/{room.maxPlayers}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <span className="text-sm text-gray-600">Rounds</span>
-              <p className="font-medium">{room.rounds}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <span className="text-sm text-gray-600">Draw Time</span>
-              <p className="font-medium">{room.drawTime}s</p>
-            </div>
-          </div>
-
-          <div className="space-y-2 mb-6">
-            {updatedRoom.players.map((player) => (
-              <div key={player.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: player.avatar?.color || '#3b82f6' }}
-                >
-                  {player.avatar?.letter || player.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="font-medium">{player.name}</span>
-                {player.id === socket.id && <span className="text-xs text-blue-600">(You)</span>}
+            
+            <div className="room-info">
+              <div className="info-badge">
+                <span className="info-label">Type</span>
+                <span className="info-value">{room.isPublic ? '🌍 Public' : '🔒 Private'}</span>
               </div>
-            ))}
-          </div>
+              <div className="info-badge">
+                <span className="info-label">Players</span>
+                <span className="info-value">{updatedRoom.players.length}/{room.maxPlayers}</span>
+              </div>
+              <div className="info-badge">
+                <span className="info-label">Rounds</span>
+                <span className="info-value">{room.rounds}</span>
+              </div>
+              <div className="info-badge">
+                <span className="info-label">Time</span>
+                <span className="info-value">{room.drawTime}s</span>
+              </div>
+            </div>
 
-          {room.host === socket.id && updatedRoom.players.length >= 2 && (
-            <Button onClick={handleStartGame} className="w-full h-14">Start Game</Button>
-          )}
-          {room.host !== socket.id && (
-            <div className="text-center text-gray-600">Waiting for host to start...</div>
-          )}
-        </Card>
+            <div className="lobby-players">
+              {updatedRoom.players.map((player) => (
+                <div key={player.id} className="lobby-player">
+                  <div className="player-avatar" style={{ backgroundColor: player.avatar?.color || '#3b82f6' }}>
+                    {player.avatar?.letter || player.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="lobby-player-name">
+                    {player.name}
+                    {player.id === socket.id && <span className="you-badge">YOU</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {room.host === socket.id && updatedRoom.players.length >= 2 && (
+              <button onClick={handleStartGame} className="btn-primary btn-large">
+                🚀 Start Game
+              </button>
+            )}
+            {room.host !== socket.id && (
+              <div className="waiting-text">⏳ Waiting for host to start...</div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="game-room">
       
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">Round {gameState.currentRound}/{gameState.totalRounds}</span>
-          <span className="text-sm font-medium text-gray-900">Room: {room.code}</span>
-          <Button variant="ghost" onClick={handleCopyRoomLink} className="text-xs">Copy Code</Button>
+      <div className="game-header">
+        <div className="header-left">
+          <span className="round-info">Round {gameState.currentRound}/{gameState.totalRounds}</span>
+          <span className="room-code">Room: {room.code}</span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600">{gameState.hiddenWord}</div>
-          <div className={`text-lg font-bold ${gameState.timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-gray-900'}`}>
-            {gameState.timeLeft}s
+        <div className="header-center">
+          <div className="word-hint">{gameState.hiddenWord}</div>
+        </div>
+
+        <div className="header-right">
+          <div className={`timer ${gameState.timeLeft < 10 ? 'danger' : ''}`}>
+            ⏱️ {gameState.timeLeft}s
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4">
+      {/* Main Game Area */}
+      <div className="game-layout">
         
         <PlayerList players={updatedRoom.players} currentDrawer={gameState.drawer} myId={socket.id} />
 
-        <div className="lg:flex-1 flex flex-col gap-4">
+        <div className="game-center">
           <Canvas
             socket={socket}
             roomCode={room.code}
             canDraw={gameState.isDrawing}
             currentTool={currentTool}
-            canvasData={canvasData}
-            onUndo={() => setCanvasData(prev => prev.slice(0, -1))}
           />
           
           <Tools
@@ -784,7 +794,6 @@ function GameRoom({ room, socket, playerName }) {
             canDraw={gameState.isDrawing}
             currentTool={currentTool}
             setCurrentTool={setCurrentTool}
-            onUndo={() => setCanvasData(prev => prev.slice(0, -1))}
           />
         </div>
 
@@ -792,20 +801,24 @@ function GameRoom({ room, socket, playerName }) {
           socket={socket}
           roomCode={room.code}
           isDrawer={gameState.isDrawing}
-          hasGuessed={gameState.hasGuessed}
         />
 
       </div>
 
       {/* Footer */}
-      <div className="bg-gray-900 text-white text-center py-3 text-sm">DEVELOPED BY HARI VURY</div>
+      <div className="game-footer">
+        <span>💻 DEVELOPED BY HARI VURY</span>
+      </div>
 
       {showRoundEnd && <RoundEnd data={roundEndData} />}
     </div>
   );
 }
 
-// ============ MAIN APP COMPONENT ============
+// ============================================
+// MAIN APP COMPONENT
+// ============================================
+
 export default function App() {
   const [view, setView] = useState('landing');
   const [playerName, setPlayerName] = useState('');
